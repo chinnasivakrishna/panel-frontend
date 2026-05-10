@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* DB-driven brand palette — defaults aligned to mewtech new/assets/css/styles.css */
+  --root-color: #2563eb;
+  --secondary-color: #10b981;
+  --tertiary-color: #f59e0b;
+
+  /* Surfaces — Mewtech (--bg-secondary / --border-color) */
+  --surface-0: #f8fafc;
+  --surface-1: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  /* Sidebar — Mewtech --sidebar-bg + gradient depth */
+  --sidebar-1: #1e293b;
+  --sidebar-2: #172033;
+  --sidebar-hover: #334155;
+  --sidebar-item-text: rgba(255, 255, 255, 0.7);
+  --sidebar-active-text: #3b82f6;
+  --sidebar-active-bg: var(--sidebar-hover);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+
+  /* Primary stripe on active/hover nav (Mewtech .nav-item::before) */
+  --sidebar-accent-stripe: #2563eb;
+
+  /* Primary actions */
+  --action-blue: #2563eb;
+  --action-blue-hover: #1d4ed8;
+
+  /* Shadows (Mewtech tokens) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+
+  /* KPI / elevated cards hover */
+  --card-hover-border: rgba(37, 99, 235, 0.2);
+  --card-hover-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+
+  /* Typography — Inter first, then Mewtech (--font-family) stack */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+
+  /* Login screen backdrop */
+  --login-page-bg: var(--surface-2);
+}
+
+/* Dark mode keeps the same layout but swaps surfaces/typography */
+.dark {
+  --surface-0: #0b1020;
+  --surface-1: #0f172a;
+  --surface-2: #111c33;
+  --border: rgba(148, 163, 184, 0.16);
+  --text-primary: #e2e8f0;
+  --text-secondary: rgba(226, 232, 240, 0.78);
+  --text-muted: rgba(226, 232, 240, 0.55);
+
+  /* Sidebar stays dark, slightly lighter border */
+  --sidebar-border: rgba(255,255,255,0.10);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-1) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--gold-1);
+  border-radius: 4px;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  background-color: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-canvas {
+  background: var(--surface-0);
+}
+
+.sidebar-bg {
+  background: linear-gradient(180deg, var(--sidebar-1), var(--sidebar-2));
+  border-right: 1px solid var(--sidebar-border);
+}
+
+.nav-active-light {
+  background-color: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Mewtech-style left accent on sidebar nav buttons (see .nav-item::before) */
+.nav-mtw {
+  position: relative;
+  overflow: hidden;
+}
+.nav-mtw::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background-color: var(--sidebar-accent-stripe);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 180ms ease;
+  border-radius: 8px 0 0 8px;
+}
+.nav-mtw:hover::before,
+.nav-mtw[data-active="true"]::before {
+  transform: scaleY(1);
+}
+
+.card-elev {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.card-kpi-interactive {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  cursor: default;
+}
+.card-kpi-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-hover-shadow), var(--shadow-md);
+  border-color: var(--card-hover-border);
+}
+
+.dark .card-elev {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.card-top-accent {
+  position: relative;
+  isolation: isolate;
+}
+.card-top-accent::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  background: var(--kpi-stripe, var(--root-color));
+  opacity: 1;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Typography — match reference UI (Inter) */
+.font-display {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Gold gradient text */
+.text-gold {
+  background: linear-gradient(135deg, var(--gold-1), var(--gold-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-hover:hover {
+  border-color: rgba(201, 168, 76, 0.35);
+  box-shadow: var(--glow);
+  transform: translateY(-1px);
+}
+
+/* Noise texture overlay */
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.4;
+}
+
+/* Animated gradient bg */
+.mesh-bg {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(201, 168, 76, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(130, 100, 200, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(60, 100, 180, 0.03) 0%, transparent 50%),
+    var(--surface-1);
+}
+
+/* Nav item active state */
+.nav-active {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.15), rgba(201, 168, 76, 0.05));
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+}
+
+/* Separator line with gold gradient */
+.gold-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-1), transparent);
+  opacity: 0.3;
+}
+
+/* Button primary */
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-1), #a8842a);
+  color: #0d0d1a;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.25);
+}
+
+.btn-gold:hover {
+  box-shadow: 0 6px 30px rgba(201, 168, 76, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Input field */
+.input-dark {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201, 168, 76, 0.12);
+  color: var(--text-primary);
+  transition: all 0.2s;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.input-dark:focus {
+  outline: none;
+  border-color: rgba(201, 168, 76, 0.45);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+  background: rgba(255,255,255,0.05);
+}
+
+.input-dark::placeholder {
+  color: var(--text-muted);
+}
+
+/* Card shine on hover */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.06), transparent);
+  transform: skewX(-15deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card-shine:hover::after {
+  animation: shimmer 0.8s ease forwards;
+  opacity: 1;
+}
+
+/* Status dot pulse */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(74, 222, 128, 0.6); }
+  50% { box-shadow: 0 0 12px rgba(74, 222, 128, 0.9); }
+}
+
+.status-dot {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Page fade in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: fadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Sidebar collapsed transition */
+.sidebar-collapsed .label-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Divider with fade */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.2) 30%, rgba(201,168,76,0.2) 70%, transparent 100%);
+}
+
+/* Glow badge */
+.badge-gold {
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: var(--gold-2);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Table row hover */
+.table-row-hover {
+  transition: background 0.2s;
+}
+.table-row-hover:hover {
+  background: rgba(201,168,76,0.04);
+}
+
+/* Subtle pattern on header */
+.header-pattern {
+  background-image: 
+    linear-gradient(rgba(201,168,76,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
