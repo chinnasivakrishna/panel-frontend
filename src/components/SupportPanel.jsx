@@ -18,7 +18,6 @@ export default function SupportPanel({ open, onClose }) {
   const [attachments, setAttachments] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [message, setMessage] = useState("");
-  const isAdmin = user?.role === "admin";
 
   const loadTickets = async () => {
     const { data } = await api.get("/support/tickets");
@@ -47,10 +46,7 @@ export default function SupportPanel({ open, onClose }) {
     loadTickets();
   };
 
-  const decide = async (id, decision) => {
-    await api.patch(`/support/tickets/${id}/decision`, { decision });
-    loadTickets();
-  };
+  // Decisions are made via email buttons (Accept/Reject), not from the web UI.
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
@@ -110,24 +106,9 @@ export default function SupportPanel({ open, onClose }) {
                   ))}
                 </div>
               )}
-              {isAdmin && (
-                <div className="mt-2 flex gap-2">
-                  <button
-                    type="button"
-                    className="px-2.5 py-1.5 rounded text-xs bg-emerald-600 text-white"
-                    onClick={() => decide(ticket.id, "accepted")}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    type="button"
-                    className="px-2.5 py-1.5 rounded text-xs bg-rose-600 text-white"
-                    onClick={() => decide(ticket.id, "declined")}
-                  >
-                    Decline
-                  </button>
-                </div>
-              )}
+              <p className="text-[11px] mt-2 text-slate-500">
+                Accept/Reject is processed from the email buttons sent to support.
+              </p>
             </div>
           ))}
         </div>
