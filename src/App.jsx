@@ -62,6 +62,9 @@ export default function App() {
       <Layout
         appName={panelConfig.config.app_name || "Enterprise Panel"}
         logoUrl={panelConfig.config.logo_url}
+        logoUrlWide={panelConfig.config.logo_url_wide}
+        logoUrlSquare={panelConfig.config.logo_url_square}
+        logoProfile={panelConfig.config.logo_profile === "rectangle" ? "rectangle" : "square"}
         navItems={panelConfig.nav}
         supportEnabled={panelConfig.config.support_widget_enabled !== "false"}
         onOpenSupport={() => setSupportOpen(true)}
@@ -81,7 +84,12 @@ export default function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/settings" element={<SettingsPage panelConfig={panelConfig} onUpdated={loadPanel} />} />
-          <Route path="/profile" element={<ProfilePage user={user} />} />
+          <Route
+            path="/profile"
+            element={
+              <ProfilePage user={user} panelConfig={panelConfig} onBrandingUpdated={loadPanel} />
+            }
+          />
           {moduleRoutes.map((m) => (
             <Route
               key={m.id}

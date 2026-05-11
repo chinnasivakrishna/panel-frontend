@@ -61,7 +61,7 @@ export default function DashboardPage({ widgets = [], metrics = {} }) {
           </>
         }
       >
-        <div className="grid w-full gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5rem),1fr))]">
+        <div className="grid w-full gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr))]">
           {(enabled.length ? enabled : []).slice(0, 6).map((w) => (
             <div key={w.code || w.id} className="min-w-0 h-full [&>section]:h-full">
               {cardForWidget(w, metrics)}

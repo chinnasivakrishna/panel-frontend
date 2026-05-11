@@ -263,8 +263,12 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
     () => ({
       app_name: panelConfig?.config?.app_name || "",
       logo_url: panelConfig?.config?.logo_url || "",
-      color_root: panelConfig?.config?.color_root || "#4F46E5",
-      color_secondary: panelConfig?.config?.color_secondary || "#06B6D4",
+      logo_url_wide: panelConfig?.config?.logo_url_wide || "",
+      logo_url_square: panelConfig?.config?.logo_url_square || "",
+      logo_profile:
+        panelConfig?.config?.logo_profile === "rectangle" ? "rectangle" : "square",
+      color_root: panelConfig?.config?.color_root || "#2563EB",
+      color_secondary: panelConfig?.config?.color_secondary || "#10B981",
       color_tertiary: panelConfig?.config?.color_tertiary || "#F59E0B",
       support_widget_enabled: panelConfig?.config?.support_widget_enabled ?? "true"
     }),
@@ -357,6 +361,23 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
     }
   };
 
+  const uploadLogoFor = async (key, file) => {
+    if (!file) return;
+    setUploading(true);
+    setMessage("");
+    try {
+      const fd = new FormData();
+      fd.append("logo", file);
+      const { data } = await api.post(`/config/panel/logo?key=${encodeURIComponent(key)}`, fd);
+      set(key, data.logoUrl);
+      setMessage("Logo uploaded. Click Save changes to apply.");
+    } catch (err) {
+      setMessage(err?.response?.data?.message || "Logo upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const loadUiMeta = async () => {
     try {
       const [hc, nav, mods, mt] = await Promise.all([
@@ -410,7 +431,8 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
       route: `/new-${Date.now()}`,
       position: "top",
       sortOrder: 99,
-      isActive: true
+      isActive: true,
+      rolesCsv: "admin,employee,merchant"
     });
     await loadUiMeta();
     onUpdated?.();
@@ -521,17 +543,37 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
 
       <form onSubmit={save} className="mt-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className={cardBase}>
-            <label className="text-sm font-medium text-slate-800 dark:text-slate-100">App name</label>
-            <input
-              className={inputBase}
-              value={form.app_name}
-              onChange={(e) => set("app_name", e.target.value)}
-              placeholder="Acme Admin"
-            />
+          {form.logo_profile !== "rectangle" && (
+            <div className={cardBase}>
+              <label className="text-sm font-medium text-slate-800 dark:text-slate-100">App name</label>
+              <input
+                className={inputBase}
+                value={form.app_name}
+                onChange={(e) => set("app_name", e.target.value)}
+                placeholder="Acme Admin"
+              />
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                Shown beside the logo when <strong>Logo profile</strong> is square (or no logo).
+              </p>
+            </div>
+          )}
+
+          <div className={`${cardBase} ${form.logo_profile === "rectangle" ? "md:col-span-2" : ""}`}>
+            <label className="text-sm font-medium text-slate-800 dark:text-slate-100">Logo profile</label>
+            <select
+              className={`${inputBase} appearance-none`}
+              value={form.logo_profile}
+              onChange={(e) => set("logo_profile", e.target.value)}
+            >
+              <option value="square">Square — compact mark + app name in sidebar</option>
+              <option value="rectangle">Wide — banner logo fills the navbar strip (no app name)</option>
+            </select>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Wide layout expects a horizontal logo; the app name field is hidden because branding comes from the image.
+            </p>
           </div>
 
-          <div className={cardBase}>
+          <div className={`${cardBase} ${form.logo_profile === "rectangle" ? "md:col-span-2" : ""}`}>
             <label className="text-sm font-medium text-slate-800 dark:text-slate-100">Logo</label>
             <div className="mt-3 flex items-center gap-3">
               <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center">
@@ -549,7 +591,7 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
                     dark:file:bg-slate-900 dark:file:text-slate-100 dark:hover:file:bg-slate-950"
                   type="file"
                   accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  onChange={(e) => uploadLogo(e.target.files?.[0])}
+                  onChange={(e) => uploadLogoFor("logo_url", e.target.files?.[0])}
                   disabled={uploading}
                 />
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -567,6 +609,75 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
               placeholder="/logos/acme.svg"
             />
           </div>
+
+          {form.logo_profile === "rectangle" && (
+            <div className={`${cardBase} md:col-span-2`}>
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Wide + square logo assets</h3>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Wide logo is used when sidebar is expanded. Square logo is used after Collapse.
+              </p>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-800 dark:text-slate-100">Wide logo (expanded)</label>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="h-10 w-40 rounded-md bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-start px-2">
+                      {form.logo_url_wide ? (
+                        <img src={resolveAssetUrl(form.logo_url_wide)} alt="Wide logo" className="max-h-10 w-auto object-contain object-left" />
+                      ) : (
+                        <span className="text-xs text-slate-400">No wide logo</span>
+                      )}
+                    </div>
+                    <input
+                      className="block w-full text-sm text-slate-700 dark:text-slate-200
+                        file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-2 file:text-sm file:font-medium
+                        file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200
+                        dark:file:bg-slate-900 dark:file:text-slate-100 dark:hover:file:bg-slate-950"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      onChange={(e) => uploadLogoFor("logo_url_wide", e.target.files?.[0])}
+                      disabled={uploading}
+                    />
+                  </div>
+                  <input
+                    className={inputBase}
+                    value={form.logo_url_wide}
+                    onChange={(e) => set("logo_url_wide", e.target.value)}
+                    placeholder="/uploads/logos/org-1-logo-wide.png"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-800 dark:text-slate-100">Square logo (collapsed)</label>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center">
+                      {form.logo_url_square ? (
+                        <img src={resolveAssetUrl(form.logo_url_square)} alt="Square logo" className="w-full h-full object-contain" />
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
+                    </div>
+                    <input
+                      className="block w-full text-sm text-slate-700 dark:text-slate-200
+                        file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-2 file:text-sm file:font-medium
+                        file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200
+                        dark:file:bg-slate-900 dark:file:text-slate-100 dark:hover:file:bg-slate-950"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      onChange={(e) => uploadLogoFor("logo_url_square", e.target.files?.[0])}
+                      disabled={uploading}
+                    />
+                  </div>
+                  <input
+                    className={inputBase}
+                    value={form.logo_url_square}
+                    onChange={(e) => set("logo_url_square", e.target.value)}
+                    placeholder="/uploads/logos/org-1-logo-square.png"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className={cardBase}>
@@ -830,8 +941,43 @@ export default function SettingsPage({ panelConfig, onUpdated }) {
                   </select>
                   <input className={inputBase} type="number" value={item.sort_order || 0} onChange={(e) => setNavItems((p) => p.map((x) => x.id === item.id ? { ...x, sort_order: Number(e.target.value || 0) } : x))} />
                 </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-slate-600 dark:text-slate-300 mr-1">Available for:</span>
+                  {["admin", "employee", "merchant"].map((r) => {
+                    const csv = String(item.roles_csv || "").trim();
+                    const roles = csv
+                      ? csv.split(",").map((x) => x.trim().toLowerCase()).filter(Boolean)
+                      : [];
+                    const baseline = roles.length ? roles : ["admin", "employee", "merchant"];
+                    const checked = baseline.includes(r);
+                    return (
+                      <label key={r} className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-200">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const next = new Set(baseline);
+                            if (e.target.checked) next.add(r);
+                            else next.delete(r);
+                            const nextCsv = [...next].join(",");
+                            setNavItems((p) => p.map((x) => x.id === item.id ? { ...x, roles_csv: nextCsv } : x));
+                          }}
+                        />
+                        {r}
+                      </label>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    className="ml-auto text-[11px] px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    onClick={() => setNavItems((p) => p.map((x) => x.id === item.id ? { ...x, roles_csv: "" } : x))}
+                    title="Clear roles (visible to all)"
+                  >
+                    Visible to all
+                  </button>
+                </div>
                 <div className="flex gap-2 mt-2">
-                  <button className="px-3 py-1.5 rounded bg-emerald-600 text-white text-xs" onClick={() => updateNav(item.id, { label: item.label, route: item.route, position: item.position, sortOrder: item.sort_order })}>Save Item</button>
+                  <button className="px-3 py-1.5 rounded bg-emerald-600 text-white text-xs" onClick={() => updateNav(item.id, { label: item.label, route: item.route, position: item.position, sortOrder: item.sort_order, rolesCsv: item.roles_csv })}>Save Item</button>
                   <button className="px-3 py-1.5 rounded bg-rose-600 text-white text-xs" onClick={() => deleteNav(item.id)}>Delete</button>
                 </div>
               </div>

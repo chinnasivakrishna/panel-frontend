@@ -1,72 +1,11 @@
-import {
-  Bell,
-  ChevronLeft,
-  ChevronRight,
-  LayoutGrid,
-  LogOut,
-  Moon,
-  Receipt,
-  Settings,
-  Sun,
-  Trash2,
-  LifeBuoy,
-  Home,
-  Package,
-  Wrench,
-  User,
-  FolderKanban,
-  CircleDot,
-  FileText,
-  Folder,
-  Users,
-  List,
-  CreditCard,
-  CircleUserRound
-} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { resolveAssetUrl } from "../utils/urls";
 import { useTheme } from "../context/ThemeContext";
-
-/** Prefer DB `icon` name; fall back to route-aware icons (Mewtech-style sidebar). */
-function iconComponentFor(iconName, route) {
-  const map = {
-    Home,
-    LayoutDashboard: LayoutGrid,
-    LayoutGrid,
-    Package,
-    Wrench,
-    User,
-    FolderKanban,
-    LifeBuoy,
-    FileText,
-    Folder,
-    Users,
-    List,
-    Receipt,
-    Trash2,
-    CreditCard,
-    CircleUserRound,
-    Settings
-  };
-  const key = iconName?.trim();
-  if (key && map[key]) return map[key];
-
-  const r = String(route || "").toLowerCase();
-  if (r.includes("/dashboard") || r === "/") return LayoutGrid;
-  if (r.includes("invoice")) return Receipt;
-  if (r.includes("account")) return Users;
-  if (r.includes("record")) return Folder;
-  if (r.includes("transact")) return CreditCard;
-  if (r.includes("trash")) return Trash2;
-  if (r.includes("profile")) return CircleUserRound;
-  if (r.includes("setting")) return Settings;
-
-  return CircleDot;
-}
+import { materialNavGlyph } from "../utils/materialNavIcon";
 
 function NavItem({ item, collapsed, active, onClick }) {
-  const Icon = iconComponentFor(item.icon, item.route);
+  const glyph = materialNavGlyph(item.icon, item.route);
   return (
     <button
       type="button"
@@ -77,8 +16,11 @@ function NavItem({ item, collapsed, active, onClick }) {
       className={`nav-mtw w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-200 min-h-[44px]
         ${active ? "nav-active-light" : "text-[color:var(--sidebar-item-text)] hover:text-white hover:bg-[var(--sidebar-hover)] hover:translate-x-0.5"}`}
     >
-      <span className="relative flex h-[22px] w-[22px] shrink-0 items-center justify-center">
-        <Icon size={22} strokeWidth={1.75} className={active ? "text-[var(--sidebar-active-text)]" : undefined} />
+      <span
+        className={`material-symbols-rounded nav-symbol shrink-0 ${active ? "text-[var(--sidebar-active-text)]" : ""}`}
+        aria-hidden
+      >
+        {glyph}
       </span>
       {!collapsed && (
         <span className="text-sm font-medium truncate">{item.label}</span>
@@ -90,6 +32,9 @@ function NavItem({ item, collapsed, active, onClick }) {
 export default function Layout({
   appName,
   logoUrl,
+  logoUrlWide,
+  logoUrlSquare,
+  logoProfile = "square",
   navItems,
   children,
   supportEnabled,
@@ -105,6 +50,11 @@ export default function Layout({
   const topItems = useMemo(() => navItems.filter((x) => x.position === "top"), [navItems]);
   const bottomItems = useMemo(() => navItems.filter((x) => x.position === "bottom"), [navItems]);
 
+  const resolvedLogo = logoUrl ? resolveAssetUrl(logoUrl) : "";
+  const resolvedWideLogo = logoUrlWide ? resolveAssetUrl(logoUrlWide) : resolvedLogo;
+  const resolvedSquareLogo = logoUrlSquare ? resolveAssetUrl(logoUrlSquare) : resolvedLogo;
+  const wideNavbarLogo = logoProfile === "rectangle" && Boolean(resolvedWideLogo);
+
   return (
     <div className="flex h-screen overflow-hidden app-canvas">
       <aside
@@ -117,19 +67,35 @@ export default function Layout({
         `}
       >
         <div
-          className={`h-16 flex items-center border-b border-white/10 shrink-0 ${collapsed ? "justify-center px-2" : "px-4 gap-3"}`}
+          className={`h-16 flex items-center shrink-0 ${collapsed ? "justify-center px-2" : wideNavbarLogo ? "px-3" : "px-4 gap-3"}`}
         >
-          <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
-            {logoUrl ? (
-              <img src={resolveAssetUrl(logoUrl)} alt="" className="w-full h-full object-cover" />
+          {wideNavbarLogo ? (
+            collapsed ? (
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                <img src={resolvedSquareLogo} alt="" className="w-full h-full object-contain" />
+              </div>
             ) : (
-              <span className="text-[#1a2233] font-bold text-sm">{appName?.slice(0, 2).toUpperCase() || "EP"}</span>
-            )}
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate leading-tight">{appName}</p>
-            </div>
+              <div className="flex items-center justify-start overflow-hidden rounded-md min-w-0 flex-1 h-10 px-0">
+                <img src={resolvedWideLogo} alt="" className="max-h-[40px] w-auto max-w-full object-contain object-left" />
+              </div>
+            )
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                {logoUrl ? (
+                  <img src={resolvedLogo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[#1e293b] font-bold text-sm">
+                    {appName?.slice(0, 2).toUpperCase() || "EP"}
+                  </span>
+                )}
+              </div>
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate leading-tight">{appName}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -145,8 +111,6 @@ export default function Layout({
           ))}
         </nav>
 
-        <div className="mx-3 h-px bg-white/10 shrink-0" />
-
         <div className="p-3 space-y-1 shrink-0 pt-2">
           {bottomItems.map((item) => (
             <NavItem
@@ -160,26 +124,24 @@ export default function Layout({
 
           <button
             type="button"
-            onClick={() => setCollapsed((v) => !v)}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors mt-1"
+            onClick={onLogout}
+            title="Sign out"
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white/75 hover:text-white hover:bg-white/10 transition-colors min-h-[44px]"
           >
-            <span className="flex items-center justify-center w-5 shrink-0">
-              {collapsed ? <ChevronRight size={18} strokeWidth={2} /> : <ChevronLeft size={18} strokeWidth={2} />}
-            </span>
-            {!collapsed && <span className="text-sm font-medium">Collapse</span>}
+            <span className="material-symbols-rounded nav-symbol shrink-0 text-white/75" aria-hidden>logout</span>
+            {!collapsed && <span className="text-sm font-medium">Sign out</span>}
           </button>
 
           <button
             type="button"
-            onClick={onLogout}
-            title="Sign out"
-            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white/75 hover:text-white hover:bg-white/10 transition-colors"
+            onClick={() => setCollapsed((v) => !v)}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors mt-1 min-h-[44px]"
           >
-            <span className="flex items-center justify-center w-5 shrink-0">
-              <LogOut size={18} strokeWidth={2} />
+            <span className="material-symbols-rounded nav-symbol shrink-0 text-white/90" aria-hidden>
+              {collapsed ? "chevron_right" : "chevron_left"}
             </span>
-            {!collapsed && <span className="text-sm font-medium">Sign out</span>}
+            {!collapsed && <span className="text-sm font-medium">Collapse</span>}
           </button>
         </div>
       </aside>
@@ -192,8 +154,8 @@ export default function Layout({
             title="Notifications"
             aria-label={`Notifications${notifCount ? `, ${notifCount} unread` : ""}`}
           >
-            <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center text-current">
-              <Bell size={20} strokeWidth={2} aria-hidden />
+            <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-current">
+              <span className="material-symbols-rounded" aria-hidden>notifications</span>
               {notifCount > 0 && (
                 <span
                   aria-hidden
@@ -210,7 +172,7 @@ export default function Layout({
             className="p-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-2)] transition-colors"
             title="Settings"
           >
-            <Settings size={20} />
+            <span className="material-symbols-rounded" aria-hidden>settings</span>
           </button>
           <button
             type="button"
@@ -218,7 +180,9 @@ export default function Layout({
             className="p-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-2)] transition-colors"
             title="Toggle theme"
           >
-            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            <span className="material-symbols-rounded" aria-hidden>
+              {theme === "dark" ? "light_mode" : "dark_mode"}
+            </span>
           </button>
         </header>
 
@@ -231,8 +195,9 @@ export default function Layout({
           onClick={onOpenSupport}
           className="fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-30 bg-[var(--root-color)] text-white hover:opacity-90 transition-opacity"
           title="Customer Support"
+          aria-label="Customer support"
         >
-          <LifeBuoy size={18} />
+          <span className="material-symbols-rounded" aria-hidden>support_agent</span>
         </button>
       )}
     </div>
